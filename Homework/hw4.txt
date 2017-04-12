@@ -1,0 +1,142 @@
+1. Give a count of all videos currently out.
+
+SELECT count(*)
+FROM rental
+WHERE return_date IS NULL
+
+------------------------
+Count
+183
+
+
+
+
+2. Make a list of all customer names who have videos out and how much they owe.
+
+
+SELECT c.customer_id,
+       c.first_name,
+       c.last_name,
+       sum(p.amount)
+FROM customer c,
+
+  (SELECT r.customer_id AS customer_id,
+          r.rental_id AS rental_id
+   FROM rental r
+   WHERE r.return_date IS NULL) AS notreturned,
+     payment p
+WHERE c.customer_id = notreturned.customer_id
+  AND p.rental_id = notreturned.rental_id
+GROUP BY c.customer_id
+ORDER BY c.customer_id
+
+
+———————————————————————————————————————————— 
+Customer_id	First_name	Last_name	Sum
+5	Elizabeth	Brown	0.99
+9	Margaret	Moore	4.99
+11	Lisa	Anderson	0.99
+14	Betty	White	4.99
+15	Helen	Harris	3.98
+21	Michelle	Clark	2.99
+22	Laura	Rodriguez	4.99
+23	Sarah	Lewis	2.99
+28	Cynthia	Young	2.99
+29	Angela	Hernandez	0.99
+33	Anna	Hill	0.99
+41	Stephanie	Mitchell	2.99
+42	Carolyn	Perez	5.98
+43	Christine	Roberts	3.98
+44	Marie	Turner	4.99
+52	Julie	Sanchez	4.99
+53	Heather	Morris	7.98
+56	Gloria	Cook	4.99
+58	Jean	Bell	0.99
+60	Mildred	Bailey	9.98
+64	Judith	Cox	4.99
+69	Judy	Gray	0.99
+73	Beverly	Brooks	2.99
+75	Tammy	Sanders	8.97
+80	Marilyn	Ross	2.99
+83	Louise	Jenkins	4.99
+87	Wanda	Patterson	4.99
+91	Lois	Butler	4.99
+94	Norma	Gonzales	4.99
+99	Emily	Diaz	0.99
+100	Robin	Hayes	0.99
+101	Peggy	Myers	0.99
+107	Florence	Woods	1.98
+108	Tracy	Cole	4.99
+111	Carmen	Owens	2.99
+114	Grace	Ellis	4.99
+115	Wendy	Harrison	2.99
+120	Sylvia	Ortiz	4.99
+135	Juanita	Mason	0.99
+142	April	Burns	0.99
+152	Alicia	Mills	4.99
+155	Gail	Knight	7.98
+162	Lauren	Hudson	0.99
+163	Cathy	Spencer	7.98
+168	Regina	Berry	0.99
+175	Annette	Olson	3.98
+178	Marion	Snyder	4.99
+180	Stacy	Cunningham	4.99
+181	Ana	Bradley	2.99
+186	Holly	Fox	2.99
+.
+.
+.
+.
+
+
+
+
+3. Give the most popular actors by store location.
+
+SELECT s.store_id,
+       a.actor_id,
+       a.first_name,
+       a.last_name
+FROM store s,
+     actor a
+WHERE a.actor_id =
+    (SELECT a.actor_id
+     FROM rental r,
+          staff stf,
+          store str,
+          inventory i,
+          film_actor fa,
+          actor a
+     WHERE r.inventory_id = i.inventory_id
+       AND i.film_id = fa.film_id
+       AND fa.actor_id = a.actor_id
+       AND r.staff_id = stf.staff_id
+       AND s.store_id = stf.store_id
+       AND stf.store_id = str.store_id
+     GROUP BY a.actor_id
+     ORDER BY count(a.actor_id) DESC LIMIT 1)
+
+____________________________________________________
+Store_id	Actor_id	First_name	Last_name
+1	107	Gina	Degeneres
+2	107	Gina	Degeneres
+
+
+
+
+
+5. What hour of the day to people rent the most ?
+
+SELECT extract(hour
+               FROM r.rental_date)
+FROM rental r
+GROUP BY extract(hour
+                 FROM r.rental_date)
+ORDER BY count(extract(hour
+                       FROM r.rental_date)) DESC LIMIT 1
+
+
+
+________________________
+Date_part
+15.00
